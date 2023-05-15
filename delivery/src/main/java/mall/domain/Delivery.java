@@ -15,7 +15,7 @@ public class Delivery {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private String userId;
+    private Long userId;
 
     private Long orderId;
 
@@ -48,26 +48,35 @@ public class Delivery {
         return deliveryRepository;
     }
 
-    public void completeDelivery(
-        CompleteDeliveryCommand completeDeliveryCommand
-    ) {
+    public void completeDelivery(CompleteDeliveryCommand completeDeliveryCommand) {
+        this.setCourier(completeDeliveryCommand.getCourier());
+        this.setStatus("DeliveryCompleted");
+
         DeliveryCompleted deliveryCompleted = new DeliveryCompleted(this);
         deliveryCompleted.publishAfterCommit();
     }
 
     public void returnDelivery(ReturnDeliveryCommand returnDeliveryCommand) {
+        this.setCourier(returnDeliveryCommand.getCourier());
+        this.setStatus("DeliveryReturned");
+
         DeliveryReturned deliveryReturned = new DeliveryReturned(this);
         deliveryReturned.publishAfterCommit();
     }
 
     public static void startDelivery(OrderPlaced orderPlaced) {
-        /** Example 1:  new item 
+        // /** Example 1:  new item 
         Delivery delivery = new Delivery();
+        delivery.setOrderId(orderPlaced.getId());
+        delivery.setProductId(orderPlaced.getProductId());
+        delivery.setProductName(orderPlaced.getProductName());
+        delivery.setQty(orderPlaced.getQty());
+        delivery.setStatus("DeliveryStarted");
         repository().save(delivery);
 
-        DeliveryStarted deliveryStarted = new DeliveryStarted(delivery);
-        deliveryStarted.publishAfterCommit();
-        */
+        //DeliveryStarted deliveryStarted = new DeliveryStarted(delivery);
+        //deliveryStarted.publishAfterCommit();
+        
 
         /** Example 2:  finding and process
         
@@ -85,26 +94,31 @@ public class Delivery {
     }
 
     public static void cancelDelivery(OrderCanceled orderCanceled) {
-        /** Example 1:  new item 
-        Delivery delivery = new Delivery();
-        repository().save(delivery);
+        // /** Example 1:  new item 
+        //Delivery delivery = new Delivery();
 
-        DeliveryCanceled deliveryCanceled = new DeliveryCanceled(delivery);
-        deliveryCanceled.publishAfterCommit();
-        */
+        //delivery.setOrderId(orderCanceled.getId());
+        //delivery.setProductId(orderCanceled.getProductId());
+        //delivery.setProductName(orderCanceled.getProductName());
+        //delivery.setQty(orderCanceled.getQty());
+        //delivery.setStatus("DeliveryCanceled");
 
-        /** Example 2:  finding and process
+        //repository().save(delivery);
+
+        //DeliveryCanceled deliveryCanceled = new DeliveryCanceled(delivery);
+        //deliveryCanceled.publishAfterCommit();
         
-        repository().findById(orderCanceled.get???()).ifPresent(delivery->{
+
+        // /** Example 2:  finding and process
+        
+        repository().findByOrderId(orderCanceled.getId()).ifPresent(delivery->{
             
-            delivery // do something
+            delivery.setStatus("DeliveryCancelled"); // do something
             repository().save(delivery);
 
             DeliveryCanceled deliveryCanceled = new DeliveryCanceled(delivery);
             deliveryCanceled.publishAfterCommit();
 
          });
-        */
-
     }
 }
